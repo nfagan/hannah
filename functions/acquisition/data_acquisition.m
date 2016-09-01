@@ -1,4 +1,4 @@
-function data_acquisition()
+function data_objects = data_acquisition()
 
 %   set path to processed .mat files (processed from edf2mat_multiple_rois.m)
 
@@ -6,8 +6,10 @@ data_dir = fullfile(pathfor('imageData'),'0815');
 
 %   define which rois are present in the data files
 
-rois = {'image','eyes','mouth','face','quadrant1','quadrant2','quadrant3','quadrant4',...
-    'littleQuadrant1','littleQuadrant2','littleQuadrant3','littleQuadrant4'};
+% rois = {'image','eyes','mouth','face','quadrant1','quadrant2','quadrant3','quadrant4',...
+%     'littleQuadrant1','littleQuadrant2','littleQuadrant3','littleQuadrant4'};
+
+rois = {'image'};
 
 %   set whether to use the per-image rois, or more general, custom rois (as
 %       was done in the past)
@@ -87,10 +89,6 @@ for r = 1:length(rois)
     fprintf('\nWorked');
 end
 
-%   combine across rois
-
-% combined_data = combine_structs_across_rois(data);
-
 %   using image category labels, add gender, expression, and gaze labels.
 %       We *could* just add these in the loop above (they're stored in
 %       imagedata), but doing so would require get_fix_event_data to needlessly loop
@@ -104,9 +102,3 @@ combined_data = add_expr_gaze_gender_labs(combined_data);
 for j = 1:length(data_object_types)
     data_objects.(data_object_types{j}).labels = combined_data.(data_object_types{j}).labels;
 end
-
-% combined_data = add_expr_gaze_gender_labs(combined_data);
-
-%   optionally remove zeros from selected (or all) fields of combined_data
-
-% combined_data = remove_zeros_from_data_struct(combined_data,{'lookingDuration'});
