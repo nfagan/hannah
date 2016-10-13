@@ -25,45 +25,9 @@ toc
 
 %%
 
-[means,errors] = means_and_errors_plot(newWayValues,newWayLabels);
+[means,errors] = means_and_errors_plot(storeValues,storeLabs);
 
 %%
 
 % binned = time_course(storeNSuccessfulTrials,trialLabels,start_times);
 binned = time_course(storeNSuccessfulTrials,trialLabels,start_times,'binBy','mean');
-
-%%
-
-field_names = fieldnames(lookLabels);
-OldWayLookLabels = cell(1,length(field_names));
-
-for i = 1:length(field_names)
-    OldWayLookLabels{i} = lookLabels.(field_names{i});
-end
-
-
-%%
-
-[oldWayValues,oldWayLabels] = normalize_by(storeLookingDuration,OldWayLookLabels,'scrambled');
-
-oldWayValues2 = oldWayValues; oldWayValues2(isnan(oldWayValues2)) = 0;
-newWayValues2 = newWayValues; newWayValues2(isnan(newWayValues2)) = 0;
-
-%%
-[newWayValues,newWayLabels] = normalize_by(storeLookingDuration,lookLabels,'scrambled');
-
-%%
-field_names = fieldnames(newWayLabels);
-for i = 1:length(oldWayLabels);
-    one_old_way = oldWayLabels{i};
-    one_new_way = newWayLabels.(field_names{i});
-    
-    testcmp(:,i) = strcmp(one_old_way,one_new_way);
-    
-end
-
-%%
-
-[means,errors] = means_and_errors_plot(values,labels,varargin)
-
-

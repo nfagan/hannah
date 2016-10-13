@@ -11,7 +11,7 @@
 allImages = unique(norm_look_roi_labels.images);
 allImages = allImages(~(strcmp(allImages,'Out') | strcmp(allImages,'Scr')));
 
-allImages_raw = unique(raw_look_roi_labels.images);
+allImages_raw = unique(look_roi_labels.images);
 allImages_raw = allImages_raw(~(strcmp(allImages_raw,'Out') | strcmp(allImages_raw,'Scr')));
 
 outImages = unique(lookLabels.images);
@@ -72,7 +72,7 @@ scrImages = scrImages((strcmp(scrImages,'Scr')));
 % %all not separated raw
 % roi = raw_look_roi_labels.rois;
 % monkeys = raw_look_roi_labels.monkeys;
-% dose = raw_look_roi_labels.doses;
+% dose = raw_look_roi_labels.dose;
 % category = raw_look_roi_labels.images;
 % session = raw_look_roi_labels.sessions;
 % gender = raw_look_roi_labels.genders;

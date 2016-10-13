@@ -16,6 +16,7 @@
     normalize_by(roi_normed,roi_normed_labs,'saline');
 
 
+
 %% collapse across SCR norm
 [gazelabels]=collapse_across({'gender','expression'},norm_look_dur_labs);
 [genderlabels]=collapse_across({'gaze','expression'},norm_look_dur_labs);

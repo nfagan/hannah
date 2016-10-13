@@ -1,17 +1,17 @@
 %% anova script -- define which roi to use
 
 [norm_look_roi,norm_look_roi_labels] = ...
-    separate_data_struct(norm_look_dur,norm_look_dur_labs,'rois',{'image'});
+    separate_data_hannah(norm_look_dur,norm_look_dur_labs,'rois',{'image'});
 
 [raw_look_roi,raw_look_roi_labels] = ...
-    separate_data_struct(storeLookingDuration,lookLabels,'rois',{'image'});
+    separate_data_hannah(storeLookingDuration,lookLabels,'rois',{'image'});
 
 %% -- isolate outdoors + scrambled images
 
 allImages = unique(norm_look_roi_labels.images);
 allImages = allImages(~(strcmp(allImages,'Out') | strcmp(allImages,'Scr')));
 
-allImages_raw = unique(raw_look_roi_labels.images);
+allImages_raw = unique(look_roi_labels.images);
 allImages_raw = allImages_raw(~(strcmp(allImages_raw,'Out') | strcmp(allImages_raw,'Scr')));
 
 outImages = unique(lookLabels.images);
@@ -21,41 +21,41 @@ scrImages = unique(lookLabels.images);
 scrImages = scrImages((strcmp(scrImages,'Scr')));
 
 [norm_look_roi,norm_look_roi_labels] = ...
-    separate_data_struct(norm_look_roi,norm_look_roi_labels,'images',allImages);
+    separate_data_hannah(norm_look_roi,norm_look_roi_labels,'images',allImages);
 
 [raw_look_roi,raw_look_roi_labels] = ...
-    separate_data_struct(raw_look_roi,raw_look_roi_labels,'images',allImages);
+    separate_data_hannah(raw_look_roi,raw_look_roi_labels,'images',allImages);
 
 [look_roi,look_roi_labels] = ...
-    separate_data_struct(storeLookingDuration,lookLabels,'images',allImages_raw);
+    separate_data_hannah(storeLookingDuration,lookLabels,'images',allImages_raw);
 
 [look_roi_out,look_roi_labels_out] = ...
-    separate_data_struct(storeLookingDuration,lookLabels,'images',outImages);
+    separate_data_hannah(storeLookingDuration,lookLabels,'images',outImages);
 
 [look_roi_scr,look_roi_labels_scr] = ...
-    separate_data_struct(storeLookingDuration,lookLabels,'images',scrImages);
+    separate_data_hannah(storeLookingDuration,lookLabels,'images',scrImages);
 
 
 %% separate by expression type
-[threat,threatLabels] = separate_data_struct(norm_look_roi,norm_look_roi_labels,'expressions',{'T'});
-[threat_d,threatLabels_d] = separate_data_struct(threat,threatLabels,'gazes',{'direct'});
-[threat_i,threatLabels_i] = separate_data_struct(threat,threatLabels,'gazes',{'indirect'});
+[threat,threatLabels] = separate_data_hannah(norm_look_roi,norm_look_roi_labels,'expressions',{'T'});
+[threat_d,threatLabels_d] = separate_data_hannah(threat,threatLabels,'gazes',{'direct'});
+[threat_i,threatLabels_i] = separate_data_hannah(threat,threatLabels,'gazes',{'indirect'});
 
-[lipsmack,lipsmackLabels] = separate_data_struct(norm_look_roi,norm_look_roi_labels,'expressions',{'L'});
-[lipsmack_d,lipsmackLabels_d] = separate_data_struct(lipsmack,lipsmackLabels,'gazes',{'direct'});
-[lipsmack_i,lipsmackLabels_i] = separate_data_struct(lipsmack,lipsmackLabels,'gazes',{'indirect'});
+[lipsmack,lipsmackLabels] = separate_data_hannah(norm_look_roi,norm_look_roi_labels,'expressions',{'L'});
+[lipsmack_d,lipsmackLabels_d] = separate_data_hannah(lipsmack,lipsmackLabels,'gazes',{'direct'});
+[lipsmack_i,lipsmackLabels_i] = separate_data_hannah(lipsmack,lipsmackLabels,'gazes',{'indirect'});
 
-[sub,subLabels] = separate_data_struct(norm_look_roi,norm_look_roi_labels,'expressions',{'S'});
-[sub_d,subLabels_d] = separate_data_struct(sub,subLabels,'gazes',{'direct'});
-[sub_i,subLabels_i] = separate_data_struct(sub,subLabels,'gazes',{'indirect'});
+[sub,subLabels] = separate_data_hannah(norm_look_roi,norm_look_roi_labels,'expressions',{'S'});
+[sub_d,subLabels_d] = separate_data_hannah(sub,subLabels,'gazes',{'direct'});
+[sub_i,subLabels_i] = separate_data_hannah(sub,subLabels,'gazes',{'indirect'});
 
-[neutral,neutralLabels] = separate_data_struct(norm_look_roi,norm_look_roi_labels,'expressions',{'N'});
-[neutral_d,neutralLabels_d] = separate_data_struct(neutral,neutralLabels,'gazes',{'direct'});
-[neutral_i,neutralLabels_i] = separate_data_struct(neutral,neutralLabels,'gazes',{'indirect'});
+[neutral,neutralLabels] = separate_data_hannah(norm_look_roi,norm_look_roi_labels,'expressions',{'N'});
+[neutral_d,neutralLabels_d] = separate_data_hannah(neutral,neutralLabels,'gazes',{'direct'});
+[neutral_i,neutralLabels_i] = separate_data_hannah(neutral,neutralLabels,'gazes',{'indirect'});
 
 %% separate by gaze type
-[direct,directLabels] = separate_data_struct(norm_look_roi,norm_look_roi_labels,'gazes',{'direct'});
-[indirect,indirectLabels] = separate_data_struct(norm_look_roi,norm_look_roi_labels,'gazes',{'indirect'});
+[direct,directLabels] = separate_data_hannah(norm_look_roi,norm_look_roi_labels,'gazes',{'direct'});
+[indirect,indirectLabels] = separate_data_hannah(norm_look_roi,norm_look_roi_labels,'gazes',{'indirect'});
 
 %% -- pull out grouping variables (for legibility) + create nesting matrix
 
@@ -72,7 +72,7 @@ scrImages = scrImages((strcmp(scrImages,'Scr')));
 % %all not separated raw
 % roi = raw_look_roi_labels.rois;
 % monkeys = raw_look_roi_labels.monkeys;
-% dose = raw_look_roi_labels.doses;
+% dose = raw_look_roi_labels.dose;
 % category = raw_look_roi_labels.images;
 % session = raw_look_roi_labels.sessions;
 % gender = raw_look_roi_labels.genders;

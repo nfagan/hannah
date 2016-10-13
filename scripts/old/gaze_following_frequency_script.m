@@ -3,16 +3,14 @@
 % load('/Volumes/My Passport/NICK/Chang Lab 2016/hannah/new_data_structure/pre_processed_data/0725/fixEventDuration.mat');
 % load('/Volumes/My Passport/NICK/Chang Lab 2016/hannah/new_data_structure/pre_processed_data/0718/lookingDuration.mat');
 
-quad_time = load('time.mat');
+quad_time = load('/Volumes/My Passport/NICK/Chang Lab 2016/hannah/new_data_structure/pre_processed_data/0727/Time.mat');
 quad_time = quad_time.save_field;
 
-quad_fix = load('fix_event_duration.mat');
+quad_fix = load('/Volumes/My Passport/NICK/Chang Lab 2016/hannah/new_data_structure/pre_processed_data/0727/fixEventDuration.mat');
 quad_fix = quad_fix.save_field;
 
-reg_time = DataObject(quad_fix);
-reg_time = reg_time(reg_time == 'eyes');
-reg_time = obj2struct(reg_time);
-
+reg_time = load('/Volumes/My Passport/NICK/Chang Lab 2016/hannah/new_data_structure/pre_processed_data/0725/Time.mat');
+reg_time = reg_time.save_field;
 %%
 
 %   paramaters

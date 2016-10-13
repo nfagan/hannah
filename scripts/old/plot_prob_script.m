@@ -2,7 +2,7 @@
 load('/Volumes/My Passport/NICK/Chang Lab 2016/hannah/new_data_structure/pre_processed_data/0725/Time.mat');
 time = save_field;
 %%
-time = obj2struct(quad_time);
+
 modified = separate_data_obj(time,'images',{'--outdoors'});
 modified = separate_data_obj(modified,'images',{'--scrambled'});
 
@@ -14,7 +14,7 @@ modified.labels = collapse_across({'gender'},modified.labels);
 
 %   specify a drug dose
 
-monkeys = {'hitch','ephron','tarantino','lager'};
+monkeys = {'hitch','ephron'};
 doses = {'high','low','saline'};
 % doses = {'high'};
 
@@ -31,7 +31,7 @@ gender_collapsed_separated = separate_data_obj(modified,...
 roi_look_order(gender_collapsed_separated,{'eyes','mouth'},100,...
     'flip',true,...
     'method','multP',...
-    'appendToDirectory',sprintf('0823/roi_look_order/%s/%s',monkey,dose), ...
+    'appendToDirectory',sprintf('0727/subtr/%s/%s',monkey,dose), ...
     'monkey',monkey ...
     );
 

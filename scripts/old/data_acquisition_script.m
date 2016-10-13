@@ -1,18 +1,16 @@
+function data_acquisition()
 
 %   set path to processed .mat files (processed from edf2mat_multiple_rois.m)
 
-data_dir = '/Users/hannahweinberg-wolf/Documents/5HTP_FV_Analysis_Code/data/processed_data';
+data_dir = fullfile(pathfor('imageData'),'0815');
 
 %   define which rois are present in the data files
 
- rois = {'image','eyes','mouth','face'};
-% rois = {'quadrant1','quadrant2','quadrant3','quadrant4',...
-%     'littleQuadrant1','littleQuadrant2','littleQuadrant3','littleQuadrant4','image','eyes','mouth','face'};
+rois = {'image','eyes','mouth','face','quadrant1','quadrant2','quadrant3','quadrant4',...
+    'littleQuadrant1','littleQuadrant2','littleQuadrant3','littleQuadrant4'};
 
 %   set whether to use the per-image rois, or more general, custom rois (as
 %       was done in the past)
-
-% use_custom_rois = 1;
 
 %   get data for each roi
 
@@ -23,14 +21,18 @@ for r = 1:length(rois)
     all_files = get_files_hannah(data_dir);
     all_files = cellfun(@(x) x.imagedata,all_files,'UniformOutput',false);
     
-    if ~isempty(strfind(lower(current_roi),'quadrant'))
-        use_custom_rois = 1;
-    else use_custom_rois = 0;
-    end
-    
     %   if wanting to only look at new data ...
     
-%    all_files = keep_from_all_files(all_files,'all');
+    all_files = keep_from_all_files(all_files,'all');
+    
+    %   set custom rois for quadrants; otherwise use the rois embedded in
+    %   all_files
+    
+    if any(strfind(lower(current_roi),'quadrant'))
+        use_custom_rois = 1;
+    else
+        use_custom_rois = 0;
+    end
     
     %   get the image presentation times per session (each cell is a session)   
            
