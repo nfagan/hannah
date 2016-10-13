@@ -1,6 +1,6 @@
 function pos = looking_coordinates_mult_images(image,monkey,region,coordinates_and_labels)
 
-if strcmp(monkey,'tarantino')
+if strcmp(monkey,'tarantino') || strcmp(monkey,'kubrick')
     screen_width = 1680;
     screen_height = 1050;
     fprintf('\nUsing tarantino''s resolution');
