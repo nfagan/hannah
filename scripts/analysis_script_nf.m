@@ -2,6 +2,9 @@
 [norm_look_dur,norm_look_dur_labs] = ...
     normalize_by(storeLookingDuration,lookLabels,'scrambled');
 
+
+d = 10;
+
 %% normalize by saline
 [norm_look_dur_sal,norm_look_dur_labs_sal] = ...
     normalize_by(storeLookingDuration,lookLabels,'saline');
