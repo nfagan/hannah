@@ -1,7 +1,7 @@
 
 %   set path to processed .mat files (processed from edf2mat_multiple_rois.m)
 
-data_dir = '/Users/hannahweinberg-wolf/Documents/5HTP_FV_Analysis_Code/data/processed_data';
+data_dir = '/Users/hannahweinberg-wolf/Documents/5HTP_FV_Analysis_Code/data/image_data/101316';
 
 %   define which rois are present in the data files
 
@@ -63,7 +63,6 @@ for r = 1:length(rois)
     all_labels.monkeys =        cellfun(@(x) x.image_data.labels.monkey,all_files,'UniformOutput',false);
     all_labels.doses =          cellfun(@(x) x.image_data.labels.dose,all_files,'UniformOutput',false);
     all_labels.images =         cellfun(@(x) x.image_data.labels.category,all_files,'UniformOutput',false);
-%     all_labels.rois =           cellfun(@(x) x.image_data.labels.rois.(current_roi),all_files,'UniformOutput',false);
     all_labels.imgGaze =        cellfun(@(x) x.image_data.labels.gaze,all_files,'UniformOutput',false);
     
     processed_image_data.image_times = image_times;
@@ -102,6 +101,9 @@ combined_data = add_expr_gaze_gender_labs(combined_data);
 for j = 1:length(data_object_types)
     data_objects.(data_object_types{j}).labels = combined_data.(data_object_types{j}).labels;
 end
+
+%datastruct = DataObjectStruct(data_objects);
+%datastruct.replace();
 
 % combined_data = add_expr_gaze_gender_labs(combined_data);
 

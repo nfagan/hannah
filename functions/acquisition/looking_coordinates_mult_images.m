@@ -1,14 +1,25 @@
 function pos = looking_coordinates_mult_images(image,monkey,region,coordinates_and_labels)
 
-if strcmp(monkey,'tarantino') || strcmp(monkey,'kubrick')
-    screen_width = 1680;
-    screen_height = 1050;
-    fprintf('\nUsing tarantino''s resolution');
-else
-    screen_width = 1280; % resolution of the screen
-    screen_height = 960;
-end
-    
+switch monkey
+    case 'tarantino'
+        screen_width = 1680;
+        screen_height = 1050;
+    case 'kubrick'
+        screen_width = 1680;
+        screen_height = 1050;
+    case 'ephron'
+        screen_width = 1280; % resolution of the screen
+        screen_height = 960;
+    case 'hitch'
+        screen_width = 1280; % resolution of the screen
+        screen_height = 960;
+    case 'lager'
+        screen_width = 1280; % resolution of the screen
+        screen_height = 960;
+    case 'cron'
+        screen_width = 1680;
+        screen_height = 1050;
+end    
 
 keynote_arbitrary_width_and_height = 768;
 actual_image_width_and_height = 400; % px;

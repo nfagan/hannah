@@ -20,7 +20,8 @@ if nargin < 2
     within = {'sessions','images','rois'};
 end
 
-data = truthy(data);  %   remove errors
+ind = isnan(data) | isinf(data.data) | data.data == 0;  %   remove errors
+data = data(~ind);
 
 indices = getindices(data,within,'showProgress');   %   get the index of each unique combination
                                                     %   of the unique labels in <within>,

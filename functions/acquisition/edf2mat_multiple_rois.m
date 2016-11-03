@@ -11,9 +11,9 @@ params = struct( ... % use to allow overwriting old .mat files. you will still b
 params = structInpParse(params,varargin);
 
 base_edf_path = pathfor('edfs');
-save_path = fullfile(pathfor('imageData'),'0815');
+save_path = fullfile(pathfor('imageData'),'101316');
 
-monkeys = {'ephron','hitch','lager','tarantino'};
+monkeys = {'ephron','hitch','lager','tarantino', 'cron', 'kubrick'};
 doses = {'low','high','saline'};
 
 roi_coordinates_excel_file = ...

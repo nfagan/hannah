@@ -2,7 +2,7 @@ function data_objects = data_acquisition()
 
 %   set path to processed .mat files (processed from edf2mat_multiple_rois.m)
 
-data_dir = fullfile(pathfor('imageData'),'0815');
+data_dir = fullfile(pathfor('imageData'),'101316');
 
 %   define which rois are present in the data files
 

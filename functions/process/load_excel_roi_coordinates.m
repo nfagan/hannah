@@ -1,8 +1,8 @@
 function coordinates_and_labels = load_excel_roi_coordinates(excel_file)
 
-if nargin < 1
+if nargin < 1    
     excel_file = ...
-        '/Volumes/My Passport/NICK/Chang Lab 2016/hannah/roi_coordinates/ROI Coordinates_one_sheet_2.xlsx';
+        fullfile(pathfor('rois'),'ROI Coordinates_one_sheet_2.xlsx');
 end
 
 [all_coordinates,labels] = xlsread(excel_file);
