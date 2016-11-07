@@ -14,7 +14,7 @@ label_fields = fieldnames(data_labels);
 % - pupil paramaters
 
 ADD_PUPIL_DATA = true;
-LOOK_BACK_FROM_IMAGE_START = -1000;  % ms - t = 0 for getting pupil data
+LOOK_BACK_FROM_IMAGE_START = -300;   % ms - t = 0 for getting pupil data
 PUPIL_VECTOR_LENGTH = 1200;          % ms - amount of pupil data to get
 
 

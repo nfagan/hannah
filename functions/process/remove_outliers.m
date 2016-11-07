@@ -10,15 +10,19 @@
 
 %}
 
-function [data,keep] = remove_outliers(data,within)
+function out = remove_outliers(data,within)
 
 if ~isa(data,'DataObject')
     data = DataObject(data);
 end
 
-if nargin < 2
-    within = {'sessions','images','rois'};
+if ( nargin < 2 )
+    within = {'sessions', 'images', 'rois'};
 end
+
+obj = data;
+
+assert( ~strcmp(obj.dtype, 'cell'), 'Cannot currently remove outliers of cell-type data' );
 
 ind = isnan(data) | isinf(data.data) | data.data == 0;  %   remove errors
 data = data(~ind);
@@ -29,6 +33,8 @@ indices = getindices(data,within,'showProgress');   %   get the index of each un
 
 keep = false(count(data,1),1);
 
+data = data.data;
+
 for i = 1:length(indices)
     fprintf('\nProcessing %d of %d',i,length(indices));
     
@@ -38,7 +44,10 @@ for i = 1:length(indices)
                                         %   bounds defined in the function below
 end
 
-data = data(keep);
+obj = obj(keep);
+
+out.object = obj;
+out.index = keep;
 
 end
 
@@ -55,3 +64,17 @@ bounds = [mean(data) + deviation*2, mean(data) - deviation*2];
 within_bounds = data <= bounds(1) & data >= bounds(2);
 
 end
+% 
+% function within_bounds = within_outlier_bounds_cell(data, index)
+% 
+% data = concatenateData( data(index) );
+% 
+% deviation = std( data(:) );
+% bounds = [mean(data(:)) + deviation*2, mean(data(:)) - deviation * 2];
+% 
+% within_bounds = data <= bounds(1) & data >= bounds(2);
+% 
+% within_bounds = sum( within_bounds, 2 ) == 
+% 
+% 
+% end
