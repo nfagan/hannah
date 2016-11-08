@@ -6,7 +6,8 @@ params = struct( ...
         'monkeys', {{ 'ephron', 'kubrick', 'tarantino', 'lager', 'hitch', 'cron' }}, ...
         'doses', {{ 'low', 'high' }} ...
     ), ...
-    'overlayMonkeyPoints', false ...
+    'overlayMonkeyPoints', false, ...
+    'xTick', 'auto' ...
 );
 
 params = parsestruct( params, varargin );
@@ -20,6 +21,7 @@ means = zeros( 1, numel(indices) );
 errors = zeros( size(means) );
 labelPairs = cell( size(means) );
 storeVectors = cell( size(means) );
+xtick = 1:numel(means);
 
 for i = 1:numel(indices)    
     extr = currentMeasure( indices{i} );
@@ -32,6 +34,13 @@ for i = 1:numel(indices)
         oneLabel = sprintf( '%s %s', oneLabel, toLabel{k} );
     end
     
+    if ( ~strcmp(params.xTick,'auto') ) && ( ~isempty(params.xTick) )
+        assert( isa(params.xTick, 'DataObject'), 'xTick param must be a DataObject' );
+        matched = params.xTick.only( combs(i,:) );
+        assert( ~isempty(matched), 'Could not find a match in the given xTick object' );
+        xtick(i) = mean(matched.data(:,1));
+    end
+    
     labelPairs{i} = oneLabel;
     storeVectors{i} = struct();
     storeVectors{i}.data = extr.data(:,1);
@@ -42,9 +51,9 @@ for i = 1:numel(indices)
 end
 
 figure;
-errorbar( means, errors, 'linestyle','none', 'color', 'r');
+errorbar( xtick, means, errors, 'linestyle','none', 'color', 'r');
 hold on;
-bar( means );
+bar( xtick, means );
 
 set( gca, 'xtick', 1:numel(means) );
 set( gca, 'xticklabels', labelPairs );
