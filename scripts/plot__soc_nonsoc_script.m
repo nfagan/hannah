@@ -1,21 +1,33 @@
-fixdur = analysis.socialNonSocialMeans.image__lookdur;
+fixdur = analysis.lookdurMean.only('down');
+
+fixdur.data = fixdur.data;
 
 soclow = fixdur.only({'low', 'social'});
 sochigh = fixdur.only({'high', 'social'});
 nonlow = fixdur.only({'low', 'nonsocial'});
 nonhigh = fixdur.only({'high','nonsocial'});
 
-soclow_mean = soclow.data(1);
-sochigh_mean = sochigh.data(1);
-nonlow_mean = nonlow.data(1);
-nonhigh_mean = nonhigh.data(1);
+soclow_mean = mean(soclow.data(:,1));
+sochigh_mean = mean(sochigh.data(:,1));
+nonlow_mean = mean(nonlow.data(:,1));
+nonhigh_mean = mean(nonhigh.data(:,1));
+
+% soclow_mean = soclow.data(1);
+% sochigh_mean = sochigh.data(1);
+% nonlow_mean = nonlow.data(1);
+% nonhigh_mean = nonhigh.data(1);
 
 plt_means = [soclow_mean sochigh_mean nonlow_mean nonhigh_mean];
 
-soclow_error = soclow.data(2);
-sochigh_error = sochigh.data(2);
-nonlow_error = nonlow.data(2);
-nonhigh_error = nonhigh.data(2);
+soclow_error = SEM(soclow.data(:,1));
+sochigh_error = SEM(sochigh.data(:,1));
+nonlow_error = SEM(nonlow.data(:,1));
+nonhigh_error = SEM(nonhigh.data(:,1));
+
+% soclow_error = soclow.data(2);
+% sochigh_error = sochigh.data(2);
+% nonlow_error = nonlow.data(2);
+% nonhigh_error = nonhigh.data(2);
 
 plt_errors = [soclow_error sochigh_error nonlow_error nonhigh_error];
 
@@ -35,12 +47,18 @@ currentMeasure = currentMeasure.remove( {'saline'} );
 
 currentMeasure.data = abs( currentMeasure.data - 1 );
 
-plot__mean_within( currentMeasure, {'monkeys','doses', 'images'}, 'manualOrder', false);
+plot__mean_within( currentMeasure, {'doses', 'images'}, 'manualOrder', false);
 
 % [indices, combs] = getindices( currentMeasure, { 'monkeys', 'doses' } );
 
+%%
 
+currentMeasure = analysis.lookdurMean.remove( 'saline' );
+currentMeasure.data = abs( currentMeasure.data - 1 );
+currentMeasure = hannah__mean_across( currentMeasure, 'sessions' );
+currentMeasure = hannah__subtract_across( currentMeasure, 'social', 'nonsocial', 'socMinusNon' );
 
+plot__mean_within( currentMeasure, {'doses', 'images'}, 'manualOrder', false);
 %%
 
 doses = currentMeasure.uniques( 'doses' );

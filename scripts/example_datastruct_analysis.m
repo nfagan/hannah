@@ -15,6 +15,12 @@ no_outliers = measures.foreach( @remove_outliers );
 outliers_removed = no_outliers.foreach( @(x) x.object );
 outliers_index = no_outliers.foreach( @(x) x.index );
 
+%% save off without outliers
+
+save('measures_outliersremoved.mat','outliers_removed');
+save('measures_outliersindex.mat','outliers_index');
+
+
 %% find average looking to faces for saline days for each monkey
 image = outliers_removed.lookdur.only( 'image' );
 saline_no_outliers_image = image.only( 'saline' );
@@ -22,20 +28,19 @@ saline_no_outliers_image = saline_no_outliers_image.remove( {'outdoors','scrambl
 saline_no_outliers_image = cat_collapse( saline_no_outliers_image, {'gender','gaze','expression'} );
 saline_no_outliers_image = saline_no_outliers_image.replace( 'uaaa', 'social' );
 
-saline_no_outliers_image = saline_no_outliers_image.only( 'ephron' );
+saline_no_outliers_image = saline_no_outliers_image.only( 'cron' );
 
 saline_no_outliers_image_baselinelooking = mean(saline_no_outliers_image)
 
-%% save off without outliers
+%%  normalize each object in <combined> by the per-session mean of its corresponding saline data
 
-save('measures_outliersremoved.mat','outliers_removed');
-save('measures_outliersindex.mat','outliers_index');
-
+image_measures = outliers_removed;
+image_measures = image_measures.foreach( @normalize_filenames );
 
 %%  create separate objects for face and image rois, then recombine into one
 
-face = outliers_removed.only( 'face' );
-image = outliers_removed.only( 'image' );
+face = combined.only( 'face' );
+image = combined.only( 'image' );
 
 face = face.namespace( 'face' ); 
 image = image.namespace( 'image' );
@@ -44,32 +49,45 @@ image = image.namespace( 'image' );
 
 combined = face.include( image );
 
-%%  normalize each object in <combined> by the per-session mean of its corresponding saline data
+%%  save normalized data
 
-combined = combined.foreach( @normalize );
+save('normalized_by_imagecat.mat','image_measures');
 
-%%
+%% Bidirectional Plot
 
-lookdur = combined2.image__lookdur;
+% lookdur = combined.image__lookdur;
+lookdur = image_measures.lookdur;
 
-lookdur = lookdur.replace( {'ephron','tarantino','kubrick'}, 'up' );
-lookdur = lookdur.replace( {'lager','cron', 'hitch' }, 'down' );
+% lookdur = lookdur.replace( {'ephron','tarantino','kubrick'}, 'up' );
+% lookdur = lookdur.replace( {'lager','cron', 'hitch' }, 'down' );
 lookdur = cat_collapse( lookdur, {'gender','gaze','expression'} );
 lookdur = lookdur.replace( 'uaaa', 'social' );
 lookdur = lookdur.replace( {'outdoors','scrambled'}, 'nonsocial' );
 
 analysis.lookdurMean = hannah__mean_within( lookdur );
 
-%%  save normalized data
+analysis.bidirect = analysis.lookdurMean;
+analysis.bidirect.data = analysis.bidirect.data - 1;
 
-save('normalized.mat','combined');
+plot__mean_within( analysis.bidirect, {'monkeys','images','doses'} );
+
+%% pupil stuff
+
+pupil_manip = cat_collapse( pupil, {'gender','gaze','expression'} );
+pupil_manip = pupil_manip.collapse( 'images' );
+
+analysis.pupilMean = hannah__mean_within( pupil_manip, ...
+    'within', {'doses', 'monkeys' });
+analysis.pupilMeanManip = analysis.pupilMean;
+analysis.pupilMeanManip.data = analysis.pupilMeanManip.data - 1;
+
+plot__mean_within( analysis.pupilMeanManip.remove('saline'), ...
+    {'images','doses'}, 'manualOrder', false, 'overlayMonkeyPoints', true );
 
 %%  remove outdoor and scrambled images
 
 social = combined.remove( {'outdoors','scrambled'} );
 save('social_normalized.mat','social');
-
-%%
 
 %%  collapse image categories and monkeys
 
@@ -99,7 +117,7 @@ lookLabels = combined_data.lookingDuration.labels;
 storeLookingDuration = combined_data.lookingDuration.data;
 
 % Separate by Subject
-current_monkey = 'hitch';
+current_monkey = 'ephron';
 [storeLookingDuration,lookLabels] = separate_data_struct(storeLookingDuration,lookLabels,'monkeys',{current_monkey});
 
 % Remove Outdoor and Scrambled Looking Duration
@@ -110,16 +128,21 @@ current_monkey = 'hitch';
 face_by_size = normalize_roi_to_image('face',raw_faces,raw_faces_labs);
 
 % collapse across different categories
-[gazelabels_face]=collapse_across({'gender','expression'},raw_faces_labs);
-[expressionlabels_face]=collapse_across({'gender','gaze'},raw_faces_labs);
+% [gazelabels_face]=collapse_across({'gender','expression'},raw_faces_labs);
+% [expressionlabels_face]=collapse_across({'gender','gaze'},raw_faces_labs);
+[nogenderlabels_face]=collapse_across('gender',raw_faces_labs);
 
 % Face by Size Looking Duration
-%gaze
-[means,errors] = means_and_errors_plot(face_by_size,gazelabels_face, ...
+% %gaze
+% [means,errors] = means_and_errors_plot(face_by_size,gazelabels_face, ...
+%     'title','FACE SIZE NORMALIZED LOOKING DURATION',...
+%     'yLabel','Normalized Looking Time','xtickLabel',{'Directed','Averted'}, 'yLimits' , [0 3000]);
+% %expression
+% [means,errors] = means_and_errors_plot(face_by_size,expressionlabels_face, ...
+%     'title','FACE SIZE NORMALIZED LOOKING DURATION',...
+%     'yLabel','Normalized Looking Time','xtickLabel',{'Lip Smack','Neutral','Fear Grimace','Threat'}, 'yLimits' , [0 3000]);
+%nogender
+[means,errors] = means_and_errors_plot(face_by_size,nogenderlabels_face, ...
     'title','FACE SIZE NORMALIZED LOOKING DURATION',...
-    'yLabel','Normalized Looking Time','xtickLabel',{'Directed','Averted'});
-%RAWexpression
-[means,errors] = means_and_errors_plot(face_by_size,expressionlabels_face, ...
-    'title','FACE SIZE NORMALIZED LOOKING DURATION',...
-    'yLabel','Normalized Looking Time','xtickLabel',{'Lip Smack','Neutral','Fear Grimace','Threat'});
+    'yLabel','Normalized Looking Time','xtickLabel',{'Directed Lip Smack','Directed Neutral','Directed Fear Grimace','Directed Threat','Averted Lip Smack','Averted Neutral','Averted Fear Grimace','Averted Threat'},'yLimits' , [0 3000]);
 

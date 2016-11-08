@@ -5,7 +5,8 @@ params = struct( ...
     'orders', struct( ...
         'monkeys', {{ 'ephron', 'kubrick', 'tarantino', 'lager', 'hitch', 'cron' }}, ...
         'doses', {{ 'low', 'high' }} ...
-    ) ...
+    ), ...
+    'overlayMonkeyPoints', false ...
 );
 
 params = parsestruct( params, varargin );
@@ -18,6 +19,7 @@ end
 means = zeros( 1, numel(indices) );
 errors = zeros( size(means) );
 labelPairs = cell( size(means) );
+storeVectors = cell( size(means) );
 
 for i = 1:numel(indices)    
     extr = currentMeasure( indices{i} );
@@ -31,6 +33,9 @@ for i = 1:numel(indices)
     end
     
     labelPairs{i} = oneLabel;
+    storeVectors{i} = struct();
+    storeVectors{i}.data = extr.data(:,1);
+    storeVectors{i}.monkeys = extr('monkeys');
     
     means(i) = mean( extr.data(:,1) );
     errors(i) = SEM( extr.data(:,1) );
@@ -43,6 +48,16 @@ bar( means );
 
 set( gca, 'xtick', 1:numel(means) );
 set( gca, 'xticklabels', labelPairs );
+
+if ( params.overlayMonkeyPoints )
+    for i = 1:numel(storeVectors)
+        for k = 1:numel(storeVectors{i}.data)
+            color = get_monkey_color_map( storeVectors{i}.monkeys{k} );
+            color = [color '*'];
+            plot(i, storeVectors{i}.data(k), color, 'linewidth', .1);
+        end
+    end
+end
 
 end
 
@@ -58,5 +73,24 @@ indices = cell( size(combs,1), 1 );
 for i = 1:numel(indices)
     indices{i} = obj.where( combs(i,:) );
 end
+
+end
+
+function color = get_monkey_color_map( monkey )
+
+map = struct( ...
+    'hitch', 'r', ...
+    'cron', 'b', ...
+    'kubrick', 'k', ...
+    'ephron', 'y', ...
+    'tarantino', 'g', ...
+    'lager', 'm' ...
+);
+
+monks = fieldnames( map );
+
+if ~any( strcmp(monks, monkey) ); error('No color defined for %s', monkey ); end;
+
+color = map.(monkey);
 
 end
