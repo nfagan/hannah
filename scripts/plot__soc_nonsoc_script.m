@@ -1,4 +1,4 @@
-fixdur = analysis.lookdurMean.only('down');
+fixdur = analysis.lookdurMean;
 
 fixdur.data = fixdur.data;
 

@@ -35,10 +35,19 @@ for i = 1:numel(indices)
     end
     
     if ( ~strcmp(params.xTick,'auto') ) && ( ~isempty(params.xTick) )
-        assert( isa(params.xTick, 'DataObject'), 'xTick param must be a DataObject' );
-        matched = params.xTick.only( combs(i,:) );
-        assert( ~isempty(matched), 'Could not find a match in the given xTick object' );
-        xtick(i) = mean(matched.data(:,1));
+        if ( isa(params.xTick, 'DataObject') )
+            matched = params.xTick.only( combs(i,:) );
+            assert( ~isempty(matched), 'Could not find a match in the given xTick object' );
+            xtick(i) = mean(matched.data(:,1));
+        else
+            assert( isa(params.xTick,'double'), ...
+                'xTick params must be a DataObject or a double' );
+%             assert( numel(params.xTick) == numel(xtick), ...
+%                 'The number of elements for the xTick param is incorrect' );
+%             xtick(i) = params.xTick(i);
+        end
+    else
+        params.xTick = xtick;
     end
     
     labelPairs{i} = oneLabel;
@@ -50,13 +59,32 @@ for i = 1:numel(indices)
     errors(i) = SEM( extr.data(:,1) );
 end
 
-figure;
-errorbar( xtick, means, errors, 'linestyle','none', 'color', 'r');
-hold on;
-bar( xtick, means );
+xtick = params.xTick;
+% xtick = [xtick; xtick];
+% xtick = reshape(xtick, 1, numel(xtick));
 
-set( gca, 'xtick', 1:numel(means) );
+figure;
+errorbar( xtick, means, errors, 'linestyle','none', 'color', 'r' );
+hold on;
+bar( xtick, means, 'barwidth', 1 );
+
+set( gca, 'xtick', xtick );
 set( gca, 'xticklabels', labelPairs );
+
+% d = 10;
+% means = means(2:2:end);
+% figure;
+% scatter(xtick, means);
+% 
+% X = [xtick' means'];
+% 
+% idx = struct(); silh = struct(); distances = struct();
+% for i = 1:4
+%     iterString = ['iter' num2str(i)];
+%     idx.(iterString) = kmeans(X, i, 'Distance', 'cityblock' );
+%     silh.(iterString) = silhouette(X,idx.(iterString),'cityblock');
+%     distances.(iterString) = mean(silh.(iterString));
+% end
 
 if ( params.overlayMonkeyPoints )
     for i = 1:numel(storeVectors)
