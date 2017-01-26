@@ -5,12 +5,29 @@
 
 function obj = cat_collapse(obj,across)
 
-if ~isa(obj,'DataObject')
+if ( ~isa(obj, 'Container') && ~isa(obj,'DataObject') )
     obj = DataObject(obj);
 end
 
-if ~iscell(across)
-    across = {across};
+if ~iscell(across), across = {across}; end
+
+%   DIFFERENT METHOD IF OBJ IS A CONTAINER
+
+if ( isa(obj, 'Container') )
+  images = unique( obj('images') );
+  images = images( cellfun(@(x) numel(x) == 4, images) );
+  replace_with = images;
+  fs = { 'gender', 'gaze', 'expression' };
+  ind = cellfun( @(x) find(strcmp(fs, x)), across );
+  for i = 1:numel(ind)
+    ref = struct( 'type', '()', 'subs', {{ind(i)}} );
+    replace_with = cellfun( @(x) subsasgn(x, ref, 'a'), ...
+      replace_with, 'UniformOutput', false );
+  end
+  for i = 1:numel(replace_with)
+    obj = obj.replace( images(i), replace_with{i} );
+  end
+  return;
 end
 
 images = obj('images');

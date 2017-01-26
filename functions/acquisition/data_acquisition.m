@@ -9,7 +9,7 @@ data_dir = fullfile(pathfor('imageData'),'101316');
 % rois = {'image','eyes','mouth','face','quadrant1','quadrant2','quadrant3','quadrant4',...
 %     'littleQuadrant1','littleQuadrant2','littleQuadrant3','littleQuadrant4'};
 
-rois = {'image','face'};
+rois = {'eyes','mouth'};
 
 %   set whether to use the per-image rois, or more general, custom rois (as
 %       was done in the past)
