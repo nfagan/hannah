@@ -13,9 +13,13 @@ label_fields = fieldnames(data_labels);
 
 % - pupil paramaters
 
-ADD_PUPIL_DATA = true;
+ADD_PUPIL_DATA = false;
 LOOK_BACK_FROM_IMAGE_START = -300;   % ms - t = 0 for getting pupil data
 PUPIL_VECTOR_LENGTH = 1200;          % ms - amount of pupil data to get
+
+% - psth parameters
+
+image_presentation_length = 5e3;
 
 
 %{
@@ -27,9 +31,9 @@ PUPIL_VECTOR_LENGTH = 1200;          % ms - amount of pupil data to get
 
 data_per_fix_event = struct();
 
-data_per_fix_event.fix_event_duration = preallocate_data([10000 1],'zeros');
-data_per_fix_event.x_y_coords =         preallocate_data([10000 2],'nans');
-data_per_fix_event.time =               preallocate_data([10000 4],'zeros');
+% data_per_fix_event.fix_event_duration = preallocate_data([10000 1],'zeros');
+% data_per_fix_event.x_y_coords =         preallocate_data([10000 2],'nans');
+% data_per_fix_event.time =               preallocate_data([10000 4],'zeros');
 
 data_per_fix_event.meta.labels =        preallocate_labels([10000 1],label_fields);
 data_per_fix_event.meta.stp =           0;
@@ -55,8 +59,12 @@ per_fix_data_labels = per_fix_data_labels(~strcmp(per_fix_data_labels,'meta'));
 data_per_image = struct();
 
 data_per_image.looking_duration =   preallocate_data([10000 1],'zeros');
-data_per_image.n_fixations =        preallocate_data([10000 1],'zeros');
-data_per_image.successful_trial =   preallocate_data([10000 1],'zeros');
+data_per_image.from_session_start = preallocate_data([10000 1],'zeros');
+% data_per_image.n_fixations =        preallocate_data([10000 1],'zeros');
+% data_per_image.successful_trial =   preallocate_data([10000 1],'zeros');
+% data_per_image.x =                  preallocate_data([10000 image_presentation_length],'nans');
+% data_per_image.y =                  preallocate_data([10000 image_presentation_length],'nans');
+% data_per_image.psth =               preallocate_data([10000 image_presentation_length],'nans');
 
 if ADD_PUPIL_DATA
     data_per_image.pupil_size =     preallocate_data([10000 1],'cellsWithValue',nan(1,PUPIL_VECTOR_LENGTH+1));
@@ -82,6 +90,8 @@ fprintf('\nProcessing session %d of %d ...',i,length(image_times));
     
     fix_starts = one_session_fix_events(:,1); %separate columns of fixation events for clarity; start of all fixations
     fix_ends = one_session_fix_events(:,2); %end of all fixations
+    
+    session_start = one_session_times(1, 1);
     
     for j = 1:size(one_session_times,1); %for each image display time ...
         
@@ -190,11 +200,18 @@ fprintf('\nProcessing session %d of %d ...',i,length(image_times));
 
             data_per_image.looking_duration.data(img_stp+1:img_stp+img_size,:) = ...
                 sum(within_time_bounds(:,3));
+            data_per_image.from_session_start.data(img_stp+1:img_stp+img_size,:) = ...
+                image_start - session_start;
             data_per_image.n_fixations.data(img_stp+1:img_stp+img_size,:) = ...
                 fix_size;
             data_per_image.successful_trial.data(img_stp+1:img_stp+img_size,:) = ...
                 1;
-
+            [psth, x, y] = ...
+              get_fix_psth( image_start, within_time_bounds, image_presentation_length );
+            data_per_image.x.data(img_stp+1:img_stp+img_size,:) = x;
+            data_per_image.y.data(img_stp+1:img_stp+img_size,:) = y;
+            data_per_image.psth.data(img_stp+1:img_stp+img_size,:) = psth;
+            
             data_per_image.meta.stp = img_stp + img_size;
 
             %   - record data per fix event
@@ -309,6 +326,27 @@ toc;
 end
 
 %   - other functions
+
+function [psth, x, y] = get_fix_psth( image_start, within_time_bounds, vector_length )
+
+times = within_time_bounds(:, 1:2) - image_start;
+lt_zero = times < 0;
+times( lt_zero ) = 0;
+times = times + 1;
+gt_vec_length = times > vector_length;
+times( gt_vec_length ) = vector_length;
+psth = zeros( 1, vector_length );
+x = zeros( size(psth) );
+y = zeros( size(psth) );
+for i = 1:size( times, 1 )
+  ind = times(i, 1):times(i,2);
+  psth( ind ) = 1;
+  x( ind ) = within_time_bounds(i, 4);
+  y( ind ) = within_time_bounds(i, 5);
+end
+
+
+end
 
 function pre = preallocate_data(dimensions,preallocate_with,preallocate_inner_cells_with)
 

@@ -9,6 +9,7 @@ if ( ~isa(obj, 'Container') && ~isa(obj,'DataObject') )
     obj = DataObject(obj);
 end
 
+if ( isequal(across, 'all') ), across = {'gender', 'gaze', 'expression'}; end;
 if ~iscell(across), across = {across}; end
 
 %   DIFFERENT METHOD IF OBJ IS A CONTAINER
@@ -19,6 +20,7 @@ if ( isa(obj, 'Container') )
   replace_with = images;
   fs = { 'gender', 'gaze', 'expression' };
   ind = cellfun( @(x) find(strcmp(fs, x)), across );
+  ind = ind + 1;
   for i = 1:numel(ind)
     ref = struct( 'type', '()', 'subs', {{ind(i)}} );
     replace_with = cellfun( @(x) subsasgn(x, ref, 'a'), ...
