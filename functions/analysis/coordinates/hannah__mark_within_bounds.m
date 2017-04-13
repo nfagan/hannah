@@ -1,4 +1,6 @@
-function within_bounds = hannah__mark_within_bounds( x, y, regions )
+function within_bounds = hannah__mark_within_bounds( x, y, regions, or_v_and )
+
+if ( nargin < 4 ), or_v_and = 'and'; end;
 
 assert( isa(x, 'Container') && isa(y, 'Container') ...
   , 'Expected x and y to be Containers' );
@@ -6,11 +8,29 @@ assert( x.labels == y.labels, 'The label objects of x and y must equivalent' );
 if ( ~iscell(regions) ), regions = { regions }; end;
 coords_file = load_excel_roi_coordinates();
 within_bounds = Container();
+inds = cell( 1, numel(regions) );
 for i = 1:numel(regions)
   one_region = per_region( x, y, regions{i}, coords_file );
   one_region( 'rois' ) = regions{i};
-  within_bounds = within_bounds.append( one_region );
+  if ( ~isequal(or_v_and, 'or') )
+    within_bounds = within_bounds.append( one_region );
+  else
+    inds{i} = one_region.data == 1;
+  end
 end
+
+if ( ~isequal(or_v_and, 'or') ), return; end;
+within_bounds = one_region;
+within_bounds.data = zeros( size(within_bounds.data) );
+leftovers = true( size(inds{1}) );
+for i = 1:numel(inds)
+  within_bounds.data( inds{i} ) = i;
+  leftovers = leftovers & ~inds{i};
+end
+% if ( any(leftovers) )
+%   within_bounds.data( leftovers ) = { 'leftover_roi' };
+% end
+within_bounds( 'rois' ) = strjoin( regions, ',' );
 
 end
 

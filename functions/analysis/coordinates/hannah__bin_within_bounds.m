@@ -3,11 +3,15 @@ function binned = hannah__bin_within_bounds(bounds, bin_size)
 start = 1;
 data = bounds.data;
 n_bins = floor( size(data, 2) / bin_size );
-new_data = false( size(data, 1), n_bins );
+new_data = zeros( size(data, 1), n_bins );
+unqs = unique( bounds.data(:) );
 
 for i = 1:n_bins
   extr = data( :, start:start+bin_size-1 );
-  new_data(:, i) = any( extr, 2 );
+  for k = 1:numel(unqs)
+    ind = any( extr == unqs(k), 2 );
+    new_data( ind, i ) = unqs(k);
+  end
   start = start + bin_size;
 end
 

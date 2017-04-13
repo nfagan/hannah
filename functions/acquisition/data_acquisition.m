@@ -1,4 +1,4 @@
-function data_objects = data_acquisition()
+function data_objects = data_acquisition( rois )
 
 %   set path to processed .mat files (processed from edf2mat_multiple_rois.m)
 
@@ -8,9 +8,15 @@ data_dir = fullfile(pathfor('imageData'),'101316');
 
 % rois = {'image','eyes','mouth','face','quadrant1','quadrant2','quadrant3','quadrant4',...
 %     'littleQuadrant1','littleQuadrant2','littleQuadrant3','littleQuadrant4'};
-
+if ( nargin < 1 )
 % rois = {'eyes','mouth'};
-rois = { 'eyes', 'mouth', 'face' };
+%   rois = { 'eyes', 'mouth', 'face' };
+  rois = { 'image' };
+else
+  if ( ~iscell(rois) ), rois = { rois }; end;
+end
+
+use_custom_rois = 0;
 
 %   set whether to use the per-image rois, or more general, custom rois (as
 %       was done in the past)
@@ -31,11 +37,11 @@ for r = 1:length(rois)
     %   set custom rois for quadrants; otherwise use the rois embedded in
     %   all_files
     
-    if any(strfind(lower(current_roi),'quadrant'))
-        use_custom_rois = 1;
-    else
-        use_custom_rois = 0;
-    end
+%     if any(strfind(lower(current_roi),'quadrant'))
+%         use_custom_rois = 1;
+%     else
+%         use_custom_rois = 0;
+%     end
     
     %   get the image presentation times per session (each cell is a session)   
            
@@ -45,8 +51,16 @@ for r = 1:length(rois)
     %       those stored in image_data, or custom-set ones
     
     if use_custom_rois
-        pos = define_custom_rois(current_roi); roi_data = get_custom_rois(pos,image_times);
-        all_labels.rois = cellfun(@(x) repmat({current_roi},size(x,1),1),image_times,'UniformOutput',false);
+%         pos = define_custom_rois(current_roi); roi_data = get_custom_rois(pos,image_times);
+%         all_labels.rois = cellfun(@(x) repmat({current_roi},size(x,1),1),image_times,'UniformOutput',false);
+        roi_data = cellfun(@(x) x.image_data.data.rois.(current_roi),all_files,'UniformOutput',false);
+        custom_roi = struct( 'minX', -10e3, 'maxX', 10e3, 'minY', -10e3, 'maxY', 10e3 );
+        for i = 1:numel(roi_data)
+          for j = 1:numel(roi_data{i})
+            roi_data{i}{j} = custom_roi;
+          end
+        end
+        all_labels.rois = cellfun(@(x) repmat({current_roi},size(x,1),1),image_times,'un',false);
     else
         roi_data = cellfun(@(x) x.image_data.data.rois.(rois{r}),all_files,'UniformOutput',false);
         all_labels.rois = cellfun(@(x) x.image_data.labels.rois.(current_roi),all_files,'UniformOutput',false);
@@ -78,11 +92,14 @@ for r = 1:length(rois)
     
     start = 1;
     chunk_size = 10;
+    n_total = ceil( numel(processed_image_data.image_times) / chunk_size );
+    chunk_n = 1;
     
 %     processed_image_data = structfun( @(x) x(1:22), processed_image_data, 'un', false );
 %     all_labels = structfun( @(x) x(1:22), all_labels, 'un', false );
     
     while ( start+chunk_size-1 < numel(processed_image_data.image_times) )
+      fprintf( '\n %d of %d', chunk_n, n_total );
       chunk_image = structfun( @(x) x(start:start+chunk_size-1), processed_image_data, 'un', false );
       chunk_labs = structfun( @(x) x(start:start+chunk_size-1), all_labels, 'un', false );
       one_iteration = get_data_from_fix_events(chunk_image, chunk_labs);
@@ -96,8 +113,10 @@ for r = 1:length(rois)
         end
       end
       start = start + chunk_size;
+      chunk_n = chunk_n + 1;
     end
     if ( start < numel(processed_image_data.image_times) )
+      fprintf( '\n %d of %d', chunk_n, n_total );
       chunk_image = structfun( @(x) x(start:end), processed_image_data, 'un', false );
       chunk_labs = structfun( @(x) x(start:end), all_labels, 'un', false );
       one_iteration = get_data_from_fix_events( chunk_image, chunk_labs );

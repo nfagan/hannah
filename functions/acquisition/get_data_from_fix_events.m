@@ -20,6 +20,8 @@ PUPIL_VECTOR_LENGTH = 1200;          % ms - amount of pupil data to get
 % - psth parameters
 
 image_presentation_length = 5e3;
+adjust_image_start = 0;
+adjust_image_end = 0;
 
 
 %{
@@ -58,12 +60,12 @@ per_fix_data_labels = per_fix_data_labels(~strcmp(per_fix_data_labels,'meta'));
 
 data_per_image = struct();
 
-data_per_image.looking_duration =   preallocate_data([10000 1],'zeros');
-data_per_image.from_session_start = preallocate_data([10000 1],'zeros');
+% data_per_image.looking_duration =   preallocate_data([10000 1],'zeros');
+% data_per_image.from_session_start = preallocate_data([10000 1],'zeros');
 % data_per_image.n_fixations =        preallocate_data([10000 1],'zeros');
 % data_per_image.successful_trial =   preallocate_data([10000 1],'zeros');
-% data_per_image.x =                  preallocate_data([10000 image_presentation_length],'nans');
-% data_per_image.y =                  preallocate_data([10000 image_presentation_length],'nans');
+data_per_image.x =                  preallocate_data([10000 image_presentation_length],'nans');
+data_per_image.y =                  preallocate_data([10000 image_presentation_length],'nans');
 % data_per_image.psth =               preallocate_data([10000 image_presentation_length],'nans');
 
 if ADD_PUPIL_DATA
@@ -95,8 +97,8 @@ fprintf('\nProcessing session %d of %d ...',i,length(image_times));
     
     for j = 1:size(one_session_times,1); %for each image display time ...
         
-        image_start = one_session_times(j,1);
-        image_end = one_session_times(j,2);
+        image_start = one_session_times(j,1) + adjust_image_start;
+        image_end = one_session_times(j,2) + adjust_image_end;
         
         if image_end > max(fix_ends); % if invalid display time
             continue;
@@ -113,11 +115,13 @@ fprintf('\nProcessing session %d of %d ...',i,length(image_times));
         %   validate
         
         if end_index < start_index
-            error('End index is less than start index');
+            continue;
+%             error('End index is less than start index');
         end
         
         if isempty(end_index) || isempty(start_index)
-            error('Could not find a start or end index');
+            continue;
+%             error('Could not find a start or end index');
         end
         
         %   if the first fixation started before the image was presented,

@@ -13,12 +13,12 @@ mdl = fitglm( predictors, responses );
 
 %%
 
-within_bounds = orig_within_bounds.remove( 'image' );
+% within_bounds = orig_within_bounds.remove( 'image' );
 % within_bounds.data = within_bounds.data( :, 1:1e3 );
 
 eyes = within_bounds.only( 'eyes' );
 mouth = within_bounds.only( 'mouth' );
-image_ind = within_bounds.where( 'face' );
+image_ind = within_bounds.where( 'image' );
 either = eyes.data | mouth.data;
 within_bounds.data(image_ind, :) = within_bounds.data(image_ind, :) & ~either;
 
@@ -49,12 +49,12 @@ summed.data = summed.data - 1;
 
 %%
 pl.default();
-pl.params.shape = [1 2];
-pl.params.y_lim = [-.5 10];
-pl.params.summary_function = @mean;
-pl.params.stacked_bar = false;
-pl.params.add_legend = true;
-pl.params.save_outer_folder = fullfile( pathfor('plots'), '021717' ...
+pl.shape = [1 2];
+pl.y_lim = [-.5 10];
+pl.summary_function = @mean;
+pl.stacked_bar = false;
+pl.add_legend = true;
+pl.save_outer_folder = fullfile( pathfor('plots'), '021717' ...
   , 'roi_sums', 'per_expression_down_group_up_group_div_saline' );
 
 pl.plot_and_save( summed, {'doses'}, @bar ...

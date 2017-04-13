@@ -1,12 +1,14 @@
-% rois = { 'eyes', 'mouth', 'image' };
-rois = { 'face' };
-x_calc = face.x.remove( {'scrambled', 'outdoors'} );
-y_calc = face.y.remove( {'scrambled', 'outdoors'} );
-within_bounds = within_bounds.append( hannah__mark_within_bounds( x_calc, y_calc, rois ) );
+rois = { 'eyes', 'mouth' };
+% rois = { 'image' };
+% rois = { 'image' };
+x_calc = x.rm( {'scrambled', 'outdoors'} );
+y_calc = y.rm( {'scrambled', 'outdoors'} );
+bounds = hannah__mark_within_bounds( x_calc, y_calc, rois, 'or' );
 %%
-prop = within_bounds.do_per( {'monkeys', 'images', 'doses', 'rois'}, @hannah__proportion_in_bounds );
-prop = within_bounds.do_per( {'images', 'sessions', 'rois'}, @hannah__proportion_in_bounds );
-prop = prop.do_per( {'monkeys', 'doses', 'rois'}, @mean );
+% prop = within_bounds.do_per( {'monkeys', 'images', 'doses', 'rois'}, @hannah__proportion_in_bounds );
+% prop = within_bounds.do_per( {'images', 'sessions', 'rois'}, @hannah__proportion_in_bounds );
+prop = em.do_per( {'monkeys', 'images', 'doses'}, @hannah__relative_proportion_within_bounds, 0:2 );
+% prop = prop.do_per( {'monkeys', 'doses', 'rois'}, @mean );
 
 %%
 prop = cat_collapse( prop, {'gender'} );
@@ -19,30 +21,40 @@ prop = prop.replace( 'gazes__direct', 'direct' );
 prop = prop.replace( 'gazes__indirect', 'indirect' );
 
 %%
+
+low = collapse( prop.only('low'), {'imgGaze', 'file_names', 'days', 'sessions'} );
+sal = collapse( prop.only('saline'), {'imgGaze', 'file_names', 'days', 'sessions'} );
+high = collapse( prop.only('high'), {'imgGaze', 'file_names', 'days', 'sessions'} );
+
+low = low.opc( sal, 'doses', @minus ); low('doses') = 'lowMinusSal';
+high = high.opc( sal, 'doses', @minus ); high('doses') = 'highMinusSal';
+prop_subbed = low.append( high );
+%%
 pl.default();
-pl.params.x = 0:.05:5-.05;
-pl.params.add_ribbon = true;
-pl.params.error_function = @std;
-pl.params.full_screen = true;
-pl.params.y_lim = [-.2 1.2];
-pl.params.shape = [3 2];
-pl.params.add_legend = true;
-pl.params.order_panels_by = { 'saline', 'low', 'high' };
-pl.params.save_outer_folder = fullfile( pathfor('plots'), '021717' ...
-  , 'roi_order', 'per_expression_binned_50ms' );
+pl.x = 0:.05:5-.05;
+% pl.x = 0:.001:5-.001;
+% pl.x = -1.5+.05:.05:0;
+% pl.x = -2+.05:.05:.2;
+pl.add_ribbon = true;
+pl.error_function = @ContainerPlotter.sem_1d;
+pl.full_screen = true;
+% pl.y_lim = [-.1 1.1];
+pl.y_lim = [];
+pl.set_colors = 'auto';
+pl.colors = { 'purple', 'orange', 'green' };
+pl.shape = [1 2];
+pl.add_legend = true;
+pl.order_panels_by = { 'saline', 'low', 'high' };
+pl.order_by = { 'saline', 'low', 'high' };
+% pl.save_outer_folder = fullfile( pathfor('plots'), '030117' ...
+%   , 'roi_order', 'iti_image_2500' );
+pl.save_outer_folder = cd;
 
-% grouping = { 'ephron', 'kubrick', 'tarantino' };
-% grouping = { 'lager', 'hitch', 'cron' };
-% group_str = strjoin( grouping, '_' );
-% group = prop.only( grouping );
-% group = group.collapse( 'monkeys' );
-% group = group.replace( 'all__monkeys', group_str );
-
-pl.plot_and_save( prop ...
-  , {'monkeys', 'expressions'} ...                  % files are
-  , @plot ...                                       % plotting function
-  , 'rois' ...                                      % lines are
-  , {'doses', 'gazes', 'expressions', 'monkeys'} ); % panels are
+pl.plot_and_save(prop ...
+  , {'gazes'} ...                                     % files are
+  , @plot ...                                         % plotting function
+  , 'doses' ...                                       % lines are
+  , { 'gazes', 'rois', 'monkeys'} );                  % panels are
 
 %%
 pl.default();
