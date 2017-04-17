@@ -323,6 +323,13 @@ nonsoc_ind = soc_nonsoc_perc.where( {'outdoors', 'scrambled'} );
 soc_nonsoc_perc( 'images', nonsoc_ind ) = 'nonsocial';
 soc_nonsoc_perc( 'images', ~nonsoc_ind ) = 'social';
 
+%   added this
+
+% soc_nonsoc_perc = soc_nonsoc_perc.do_per( {'sessions', 'images'}, @mean );
+
+%   end added this
+
+
 groups = { 'monkeys', 'doses', 'images' };
 
 labels = labels_for_anova( soc_nonsoc_perc, groups );
