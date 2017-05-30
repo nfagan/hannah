@@ -13,7 +13,8 @@ looks = measures.( measure_type );
 looks = looks.only( 'image' );
 
 % - savepath
-savepath = fullfile( pathfor('plots'), '040717', 'raw' );
+savepath = fullfile( pathfor('plots'), '051117', measure_type, 'raw' );
+if ( exist(savepath, 'dir') ~= 7 ), mkdir(savepath); end;
 
 pl = ContainerPlotter();
 
@@ -25,6 +26,7 @@ per_monk = per_monk.do_per( {'sessions'}, @mean );
 
 pl.default();
 pl.order_by = { 'saline', 'low', 'high' };
+pl.y_lim = [0 3.1e3];
 pl.bar( per_monk, 'doses', 'images', 'monkeys' );
 
 filename = sprintf( 'per_monk_collapsed_images_%s', measure_type );
@@ -79,6 +81,39 @@ pl.order_groups_by = { 'saline', 'low', 'high' };
 pl.bar( up_down, 'images', 'doses', 'monkeys' );
 
 filename = sprintf( 'ud_scr_out_face_%s', measure_type );
+saveas( gcf, fullfile(savepath, filename), 'epsc' );
+
+%%  per monkey, each of 8 categories / scr / outdoors
+
+per_monk = looks;
+per_monk = cat_collapse( per_monk, {'gender'} );
+per_monk = per_monk.do_per( {'sessions', 'images'}, @mean );
+
+pl.default();
+pl.y_lim = [];
+pl.order_by = { 'scrambled', 'outdoors' };
+pl.order_groups_by = { 'saline', 'low', 'high' };
+pl.order_panels_by = { 'ephron', 'kubrick', 'tarantino', 'lager', 'hitch', 'cron' };
+pl.bar( per_monk, 'images', 'doses', 'monkeys' );
+
+filename = sprintf( 'per_monk_scr_out_per_exp_%s', measure_type );
+saveas( gcf, fullfile(savepath, filename), 'epsc' );
+
+%%	up v. down, each of 8 categories / scr / outdoors
+
+up_down = looks;
+up_down = cat_collapse( up_down, {'gender'} );
+up_down = make_ud( up_down );
+
+up_down = up_down.do_per( {'sessions', 'images'}, @mean );
+
+figure;
+pl.default();
+pl.order_by = { 'scrambled', 'outdoors' };
+pl.order_groups_by = { 'saline', 'low', 'high' };
+pl.bar( up_down, 'images', 'doses', 'monkeys' );
+
+filename = sprintf( 'ud_scr_out_per_exp_%s', measure_type );
 saveas( gcf, fullfile(savepath, filename), 'epsc' );
 
 %%  per monkey, soc / nosoc

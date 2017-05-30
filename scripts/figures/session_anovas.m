@@ -383,3 +383,126 @@ for i = 1:numel(per_group)
   
   anovas = anovas.append( Container(data_struct, anova_labels) );
 end
+
+%%  bidirect, with group, social v. nosocial, only saline, raw
+
+social_bidirect = looks.only( 'saline' );
+
+social_bidirect = social_bidirect.do_per( {'images', 'sessions'}, @mean );
+social_bidirect = make_ud( social_bidirect );
+
+nonsoc_ind = social_bidirect.where( {'outdoors', 'scrambled'} );
+social_bidirect( 'images', nonsoc_ind ) = 'nonsocial';
+social_bidirect( 'images', ~nonsoc_ind ) = 'social';
+
+groups = { 'monkeys', 'images' };
+
+labels = labels_for_anova( social_bidirect, groups );
+
+[~, tbl, stats] = anovan( social_bidirect.data, labels, 'varnames', groups, 'model', 'full' );
+[c, ~, ~, gnames] = multcompare( stats, 'dimension', 1:numel(groups) );
+
+social_v_nonsocial_with_group_only_saline = struct();
+for i = 1:numel(groups)
+  social_v_nonsocial_with_group_only_saline.effects.(groups{i}).means = social_bidirect.do_per( groups{i}, @mean );
+  social_v_nonsocial_with_group_only_saline.effects.(groups{i}).devs = social_bidirect.do_per( groups{i}, @std );
+end
+
+social_v_nonsocial_with_group_only_saline.effects.interaction.mean = social_bidirect.do_per( groups, @mean );
+social_v_nonsocial_with_group_only_saline.effects.interaction.dev = social_bidirect.do_per( groups, @std );
+
+social_v_nonsocial_with_group_only_saline.comparisons = c;
+social_v_nonsocial_with_group_only_saline.group_names = gnames;
+
+anova_labels.type = {'social_v_nonsocial_with_group_only_saline'};
+data_struct = struct( 'table', {tbl}, 'descriptives', social_v_nonsocial_with_group_only_saline );
+
+anovas = anovas.append( Container(data_struct, anova_labels) );
+
+%%  bidirect, per group, social v. nosocial, only saline, raw
+
+per_group = social_bidirect.enumerate( 'monkeys' );
+groups = { 'images' };
+for i = 1:numel(per_group)
+  
+  current_group = per_group{i};
+  current_group_name = char( current_group('monkeys') );
+  labels = labels_for_anova( current_group, groups );
+  [~, tbl, stats] = anovan( current_group.data, labels, 'varnames', groups, 'model', 'full' );
+  [c, ~, ~, gnames] = multcompare( stats, 'dimension', 1:numel(groups) );
+  
+  social_v_nonsocial_per_group_only_saline = struct();
+  for k = 1:numel(groups)
+    social_v_nonsocial_per_group_only_saline.(groups{k}).mean = current_group.do_per( groups{k}, @mean );
+    social_v_nonsocial_per_group_only_saline.(groups{k}).dev = current_group.do_per( groups{k}, @std );
+  end
+  
+  social_v_nonsocial_per_group_only_saline.effects.interaction.mean = current_group.do_per( groups, @mean );
+  social_v_nonsocial_per_group_only_saline.effects.interaction.dev = current_group.do_per( groups, @std );
+  
+  social_v_nonsocial_per_group_only_saline.comparisons = c;
+  social_v_nonsocial_per_group_only_saline.group_names = gnames;
+  
+  anova_labels.type = { sprintf('social_v_nonsocial_per_group_only_saline%s', current_group_name) };
+  data_struct = struct( 'table', {tbl}, 'descriptives', social_v_nonsocial_per_group_only_saline );
+  
+  anovas = anovas.append( Container(data_struct, anova_labels) );
+end
+
+%%  bidirect, with group, social only, saline only, raw
+
+social_bidirect = social_bidirect.only( 'social' );
+
+groups = { 'monkeys', 'expressions', 'gazes' };
+
+labels = labels_for_anova( social_bidirect, groups );
+
+[~, tbl, stats] = anovan( social_bidirect.data, labels, 'varnames', groups, 'model', 'full' );
+[c, ~, ~, gnames] = multcompare( stats, 'dimension', 1:numel(groups) );
+
+social_with_group_only_saline = struct();
+for i = 1:numel(groups)
+  social_with_group_only_saline.effects.(groups{i}).means = social_bidirect.do_per( groups{i}, @mean );
+  social_with_group_only_saline.effects.(groups{i}).devs = social_bidirect.do_per( groups{i}, @std );
+end
+
+social_with_group_only_saline.effects.interaction.mean = social_bidirect.do_per( groups, @mean );
+social_with_group_only_saline.effects.interaction.dev = social_bidirect.do_per( groups, @std );
+
+social_with_group_only_saline.comparisons = c;
+social_with_group_only_saline.group_names = gnames;
+
+anova_labels.type = {'social_with_group_only_saline'};
+data_struct = struct( 'table', {tbl}, 'descriptives', social_with_group_only_saline );
+
+anovas = anovas.append( Container(data_struct, anova_labels) );
+
+%%  bidirect, per group, social v. nosocial, only saline, raw
+
+per_group = social_bidirect.enumerate( 'monkeys' );
+groups = { 'expressions', 'gazes' };
+for i = 1:numel(per_group)
+  
+  current_group = per_group{i};
+  current_group_name = char( current_group('monkeys') );
+  labels = labels_for_anova( current_group, groups );
+  [~, tbl, stats] = anovan( current_group.data, labels, 'varnames', groups, 'model', 'full' );
+  [c, ~, ~, gnames] = multcompare( stats, 'dimension', 1:numel(groups) );
+  
+  social_per_group_only_saline = struct();
+  for k = 1:numel(groups)
+    social_per_group_only_saline.(groups{k}).mean = current_group.do_per( groups{k}, @mean );
+    social_per_group_only_saline.(groups{k}).dev = current_group.do_per( groups{k}, @std );
+  end
+  
+  social_per_group_only_saline.effects.interaction.mean = current_group.do_per( groups, @mean );
+  social_per_group_only_saline.effects.interaction.dev = current_group.do_per( groups, @std );
+  
+  social_per_group_only_saline.comparisons = c;
+  social_per_group_only_saline.group_names = gnames;
+  
+  anova_labels.type = { sprintf('social_per_group_only_saline%s', current_group_name) };
+  data_struct = struct( 'table', {tbl}, 'descriptives', social_per_group_only_saline );
+  
+  anovas = anovas.append( Container(data_struct, anova_labels) );
+end
