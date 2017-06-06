@@ -1,9 +1,13 @@
-function data_struct = anovan( obj, groups )
+function data_struct = anovan( obj, groups, varargin )
+
+defaults.dimension = 1:numel( groups );
+
+params = parsestruct( defaults, varargin );
 
 labels = labels_for_anova( obj, groups );
 
 anova_opts = { 'varnames', groups, 'model', 'full', 'display', 'off' };
-mult_opts = { 'dimension', 1:numel(groups), 'display', 'off' };
+mult_opts = { 'dimension', params.dimension, 'display', 'off' };
 
 [~, tbl, stats] = anovan( obj.data, labels, anova_opts{:} );
 [c, ~, ~, gnames] = multcompare( stats, mult_opts{:} );
