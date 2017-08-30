@@ -1,9 +1,9 @@
 function meaned = saline_normalize( obj, operation )
 
-if ( nargin < 2 ), operation = 'divide'; end;
+if ( nargin < 2 ), operation = 'divide'; end
 
-meaned = obj.do_per( {'monkeys', 'doses', 'images', 'sessions'}, @mean );
-sal = do_per( obj.only('saline'), {'monkeys', 'doses', 'images'}, @mean );
+meaned = obj.parfor_each( {'monkeys', 'doses', 'images', 'sessions'}, @mean );
+sal = parfor_each( obj.only('saline'), {'monkeys', 'doses', 'images'}, @mean );
 
 [objs, inds] = meaned.enumerate( {'monkeys', 'doses', 'images', 'sessions'} );
 for i = 1:numel( objs )

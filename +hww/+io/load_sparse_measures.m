@@ -14,7 +14,8 @@ if ( ~isequal(kind, 'pupil_iti') )
   filename = 'sparse_measures_outliersremoved.mat';
 else filename = 'sparse_pupil_iti.mat';
 end
-load_path = fullfile( pathfor('processedImageData'), subfolder, filename );
+conf = hww.config.load();
+load_path = fullfile( conf.PATHS.processedImageData, subfolder, filename );
 measures = load( load_path );
 fields = fieldnames( measures );
 measures = measures.( fields{1} );
