@@ -4,6 +4,8 @@ save_path = fullfile( conf.PATHS.processedImageData, 'analyses', 'correlations',
 if ( exist(save_path, 'dir') ~= 7 ), mkdir( save_path ); end
 filename = 'correlations.mat';
 
+addpath( genpath(fullfile(conf.PATHS.repositories, 'global')) );
+
 p = parpool( feature('NumCores') );
 N = 100;
 
