@@ -7,7 +7,8 @@ filename = 'correlations.mat';
 addpath( genpath(fullfile(conf.PATHS.repositories, 'global')) );
 
 p = parpool( feature('NumCores') );
-N = 100;
+
+N = 1000;
 
 lookdur = hww.io.load_sparse_measures( 'lookdur' );
 lookdur = lookdur.only( 'image' );
