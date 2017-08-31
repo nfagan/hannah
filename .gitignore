@@ -3,3 +3,5 @@ paths/
 playground/
 *m~
 *.asv
++hww/+config/config.mat
++hww/+config/default.mat
