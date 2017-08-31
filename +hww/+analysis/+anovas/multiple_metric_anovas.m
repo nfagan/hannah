@@ -183,7 +183,8 @@ groups = { 'doses', 'gazes', 'expressions' };
 per_roi = mag_meaned.enumerate( 'rois' );
 for i = 1:numel(per_roi)
   roi = per_roi{i}('rois');
-  result = anovas.anovan( per_roi{i}, groups );
+%   result = anovas.anovan( per_roi{i}, groups );
+  result = anovas.anovan( per_roi{i}, groups, 'dimension', [1, 3] );
   result = Container( result, 'type', 'mag_change', 'images', 'all__images' ...
     , 'rois', roi, 'measure', 'proportion', 'gazes', 'direct_vs_inverted' );
   results = results.append( result );

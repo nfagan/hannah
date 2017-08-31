@@ -6,7 +6,10 @@ filename = 'correlations.mat';
 
 addpath( genpath(fullfile(conf.PATHS.repositories, 'global')) );
 
-p = parpool( feature('NumCores') );
+p = gcp( 'nocreate' );
+if ( isempty(p) )
+  p = parpool( feature('NumCores') );
+end
 
 N = 1000;
 
@@ -16,6 +19,8 @@ lookdur = lookdur.only( 'image' );
 conts = cell( 1, N );
 lookdur = parallel.pool.Constant( lookdur );
 
+tic;
+
 parfor i = 1:N+1
  
 fprintf( '\n\n\n Iteration %d of %d\n\n\n', i, N+1 );
@@ -24,7 +29,7 @@ real_data = lookdur.Value;
 
 % don't shuffle on last iteration
 if ( i < N+1 )
-  shuffled_data = shuffled_data.for_each( {'monkeys', 'images'}, @shuffle );
+  shuffled_data = real_data.for_each( {'monkeys', 'images'}, @shuffle );
 else
   shuffled_data = real_data;
 end
@@ -57,6 +62,8 @@ conts = conts.add_field( 'run_time' );
 conts( 'run_time' ) = datestr( now );
 
 save( fullfile(save_path, filename), 'conts' );
+
+toc;
 
 %%
 
