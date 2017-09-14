@@ -4,21 +4,21 @@ measures_path = fullfile( pathfor('processedImageData'), '110716', filename );
 load( measures_path );
 
 % - measure type
-measure_type = 'nfix';
+measure_type = 'lookdur';
 looks = measures.( measure_type );
 
 % - roi
 looks = looks.only( 'image' );
 
 % - savepath
-savepath = fullfile( pathfor('plots'), '041917', measure_type, 'percent_change' );
+savepath = fullfile( pathfor('plots'), '091417', measure_type, 'percent_change' );
 if ( exist(savepath, 'dir') ~= 7 ), mkdir(savepath); end;
 
 means = struct();
 pl = ContainerPlotter();
 %%  normalize, per session, per image
 
-normed = saline_normalize( looks );
+normed = hww.process.saline_normalize( looks );
 normed.data = (normed.data-1)*100;
 
 %%  bidirect expression / gaze
@@ -181,22 +181,68 @@ filename = sprintf( 'per_monk_soc_nonsoc_%s', measure_type );
 saveas( gcf, fullfile(savepath, filename), 'epsc' );
 %%  up v. down, soc / nonsocial
 
+filename = sprintf( 'ud_soc_nonsoc_%s', measure_type );
+soc_points_filename = sprintf( 'ud_soc_nonsoc_points_social_%s', measure_type );
+nsoc_points_filename = sprintf( 'ud_soc_nonsoc_points_nonsocial_%s', measure_type );
+
+mean_func = @Container.mean_1d;
+
 up_down = normed;
 up_down = cat_collapse( up_down, {'gender', 'gaze', 'expression'} );
 up_down = up_down.replace( 'uaaa', 'social' );
-up_down = make_ud( up_down );
 up_down = up_down.replace( {'outdoors', 'scrambled'}, 'nonsocial' );
-
-up_down = up_down.do_per( {'sessions', 'images'}, @mean );
+up_down = up_down.for_each_1d( {'sessions', 'images'}, mean_func );
+up_down = hww.process.add_ud( up_down );
 
 means.up_down_snc = up_down;
 
-figure;
+figure(1); clf();
 pl.default();
-pl.y_lim = [-40 70];
+pl.y_lim = [-40 100];
+pl.x_tick_rotation = 0;
 pl.order_by = { 'social', 'nonsocial' };
 pl.order_groups_by = { 'saline', 'low', 'high' };
-pl.bar( up_down.rm('saline'), 'images', 'doses', 'monkeys' );
+pl.bar( up_down.rm('saline'), 'images', 'doses', 'monk_group' );
+% saveas( gcf, fullfile(savepath, filename), 'epsc' );
 
-filename = sprintf( 'ud_soc_nonsoc_%s', measure_type );
+%   add points
+
+xs_labs = { 'social', 'nonsocial' };
+g_labs = { 'low', 'high' };
+p_labs = { 'monk_group__up', 'monk_group__down' };
+
+C = allcomb( {xs_labs, g_labs, p_labs} );
+
+axs = findobj( figure(1), 'type', 'axes' );
+set( axs, 'NextPlot', 'add' );
+
+colors = hww.plot.util.get_monkey_colors();
+
+for i = 1:size(C, 1)
+  
+  x_lab = C{i, 1};
+  g_lab = C{i, 2};
+  p_lab = C{i, 3};
+  
+  ax_ind = numel(axs) - find(strcmp(p_labs, p_lab)) + 1;
+  
+  x_coord = find( strcmp(xs_labs, x_lab) );
+  subset = up_down.only( C(i, :) );
+  subset = subset.for_each_1d( {'monkeys', 'images'}, mean_func );
+  
+  offsets = -1/numel(g_labs):1/numel(g_labs):1/numel(g_labs);
+  
+  g_offset = find( strcmp(g_labs, g_lab) );
+  
+  x = x_coord + offsets( g_offset );
+  
+  data = subset.data;
+  
+  for k = 1:numel(data)
+    color = colors.(char(subset('monkeys', k)));
+    plot( axs(ax_ind), x, data(k), sprintf('%s*', color) );
+  end
+  
+end
+
 saveas( gcf, fullfile(savepath, filename), 'epsc' );

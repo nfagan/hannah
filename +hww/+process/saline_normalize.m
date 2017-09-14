@@ -3,9 +3,9 @@ function meaned = saline_normalize(obj)
 within1 = { 'monkeys', 'doses', 'images', 'sessions' };
 within2 = { 'monkeys', 'doses', 'images' };
 
-meaned = obj.parfor_each( within1, @mean );
+meaned = obj.for_each_1d( within1, @Container.mean_1d );
 sal = obj.only( 'saline' );
-sal = sal.parfor_each( within2, @mean );
+sal = sal.for_each_1d( within2, @Container.mean_1d );
 
 [inds, C] = meaned.get_indices( {'monkeys', 'doses', 'images', 'sessions'} );
 
