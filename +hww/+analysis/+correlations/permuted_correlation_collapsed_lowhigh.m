@@ -38,7 +38,7 @@ fprintf( ['\n' repmat('.', 1, N+1) '\n\n'] );
 
 tic;
 
-parfor i = 1:N+1
+for i = 1:N+1
   
 warning( 'off', 'all' );
   
@@ -71,9 +71,10 @@ base = base.for_each_1d( {'monkeys', 'doses'}, @Container.mean_1d );
 
 dists{i} = base.append( norm );
 
-%   arrange so that labels are equivalent
-base = base.append( base );
-norm = Container.concat( norm.enumerate({'doses', 'monkeys'}) );
+% %   arrange so that labels are equivalent
+% base = base.append( base );
+% norm = Container.concat( norm.enumerate({'doses', 'monkeys'}) );
+norm = norm.for_each_1d( 'monkeys', @Container.mean_1d );
 
 fs = { 'kind', 'doses' };
 assert( eq_ignoring(norm.labels, base.labels, fs), 'Labels are not equivalent.' );
