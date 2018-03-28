@@ -21,6 +21,27 @@ pl = ContainerPlotter();
 normed = hww.process.saline_normalize( looks );
 normed.data = (normed.data-1)*100;
 
+%%  mag change per expression, social images only
+
+plt = normed;
+plt = cat_collapse( plt, {'gender'} );
+plt = plt.rm( {'outdoors', 'scrambled'} );
+
+figure;
+pl.default();
+pl.order_groups_by = { 'low', 'high' };
+pl.order_by = { 'uadt', 'uads', 'uadl', 'uadn', 'uait', 'uais', 'uail', 'uain' };
+pl.order_panels_by = { 'ephron', 'tarantino', 'kubrick', 'hitch', 'cron', 'lager' };
+pl.y_lim = [];
+
+pl.bar( plt.rm('saline'), 'images', 'doses', 'monkeys' );
+
+% pl.order_groups_by = { 'low', 'high' };
+% pl.bar( up_down.rm('saline'), 'images', 'doses', 'monkeys' );
+
+% filename = sprintf( 'ud_exp_gaze_%s', measure_type );
+% saveas( gcf, fullfile(savepath, filename), 'epsc' );
+
 %%  bidirect expression / gaze
 
 up_down = normed;
@@ -66,6 +87,56 @@ pl.order_by = { 'saline', 'low', 'high' };
 pl.bar( per_monk.rm('saline'), 'doses', 'images', 'monkeys' );
 
 filename = sprintf( 'per_monk_collapsed_images_%s', measure_type );
+saveas( gcf, fullfile(savepath, filename), 'epsc' );
+
+%%  mag change, collapsed images
+
+mag_change = hww.process.add_ud( normed );
+mag_change = mag_change.rm( 'saline' );
+mag_change.data = abs( mag_change.data );
+mag_change = mag_change.each1d( 'sessions', @rowops.mean );
+
+figure(1); clf();
+pl.default();
+pl.y_lim = [ 0, 90 ];
+pl.order_by = { 'low', 'high' };
+pl.bar( mag_change, 'doses', 'images', 'images' );
+
+%   add points
+
+xs_labs = { 'low', 'high' };
+g_labs = { 'all__images' };
+p_labs = { 'all__images' };
+
+C = allcomb( {xs_labs, g_labs, p_labs} );
+
+axs = findobj( figure(1), 'type', 'axes' );
+set( axs, 'NextPlot', 'add' );
+
+colors = hww.plot.util.get_monkey_colors();
+
+for i = 1:size(C, 1)
+  
+  x_lab = C{i, 1};
+  g_lab = C{i, 2};
+  p_lab = C{i, 3};
+  
+  ax_ind = numel(axs) - find(strcmp(p_labs, p_lab)) + 1;
+  
+  x = find( strcmp(xs_labs, x_lab) );
+  subset = mag_change.only( C(i, :) );
+  subset = subset.each1d( {'monkeys', 'images'}, @rowops.mean );
+  
+  data = subset.data;
+  
+  for k = 1:numel(data)
+    color = colors.(char(subset('monkeys', k)));
+    plot( axs(ax_ind), x, data(k), sprintf('%s*', color) );
+  end
+  
+end
+
+filename = sprintf( 'mag_change_collapsed_images_%s', measure_type );
 saveas( gcf, fullfile(savepath, filename), 'epsc' );
 
 %%  up v. down, collapsed images

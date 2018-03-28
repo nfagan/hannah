@@ -14,8 +14,8 @@ label_fields = fieldnames(data_labels);
 % - pupil paramaters
 
 ADD_PUPIL_DATA = true;
-LOOK_BACK_FROM_IMAGE_START = -1500;   % ms - t = 0 for getting pupil data
-PUPIL_VECTOR_LENGTH = 1500;           % ms - amount of pupil data to get
+LOOK_BACK_FROM_IMAGE_START = 0;   % ms - t = 0 for getting pupil data
+PUPIL_VECTOR_LENGTH = 300;           % ms - amount of pupil data to get
 
 % - psth parameters
 
@@ -60,7 +60,7 @@ per_fix_data_labels = per_fix_data_labels(~strcmp(per_fix_data_labels,'meta'));
 
 data_per_image = struct();
 
-% data_per_image.looking_duration =   preallocate_data([10000 1],'zeros');
+data_per_image.looking_duration =   preallocate_data([10000 1],'zeros');
 % data_per_image.from_session_start = preallocate_data([10000 1],'zeros');
 % data_per_image.n_fixations =        preallocate_data([10000 1],'zeros');
 % data_per_image.successful_trial =   preallocate_data([10000 1],'zeros');

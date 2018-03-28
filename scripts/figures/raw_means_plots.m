@@ -14,9 +14,14 @@ looks = looks.only( 'image' );
 
 % - savepath
 savepath = fullfile( pathfor('plots'), datestr(now, 'mmddyy'), measure_type, 'raw' );
-if ( exist(savepath, 'dir') ~= 7 ), mkdir(savepath); end
+do_save = false;
+if ( do_save && exist(savepath, 'dir') ~= 7 ), mkdir(savepath); end
 
 pl = ContainerPlotter();
+
+%%
+normed = hww.process.saline_normalize( looks );
+normed.data = (normed.data-1)*100;
 
 %%  per monkey, collapsed images
 
@@ -32,9 +37,13 @@ pl.y_lim = [0 3.1e3];
 pl.bar( per_monk, 'doses', 'images', 'monkeys' );
 
 filename = sprintf( 'per_monk_collapsed_images_%s', measure_type );
-saveas( gcf, fullfile(savepath, filename), 'epsc' );
+if ( do_save )
+  saveas( gcf, fullfile(savepath, filename), 'epsc' );
+end
 
 %%  up v. down, collapsed images, overlaid points
+
+pl = ContainerPlotter();
 
 mean_func = @Container.mean_1d;
 
@@ -92,7 +101,151 @@ for i = 1:size(C, 1)
   
 end
 
-saveas( gcf, fullfile(savepath, filename), 'epsc' );
+% saveas( gcf, fullfile(savepath, filename), 'epsc' );
+
+%%  per monkey, social vs. scrambled, overlaid points
+
+% kind = 'social_v_nonsocial';
+kinds = { 'social_v_scrambled', 'social_v_outdoors_v_scrambled' ...
+  , 'social_v_nonsocial', 'social_minus_nonsocial' };
+mis_per_monkey = { true, false };
+mis_normalized = { true, false };
+add_points = false;
+do_save = true;
+
+CC = allcomb( {kinds, mis_per_monkey, mis_normalized} );
+
+for idx = 1:size(CC, 1)
+  
+  kind = CC{idx, 1};
+  is_per_monkey = CC{idx, 2};
+  is_normalized = CC{idx, 3};
+
+  filename = kind;
+
+  pl = ContainerPlotter();
+  mean_func = @Container.mean_1d;
+
+  if ( is_normalized )
+    up_down = normed;
+    up_down = up_down.rm( 'saline' );
+  else
+    up_down = looks;
+  end
+
+  if ( strcmp(kind, 'social_v_scrambled') )
+    up_down = up_down.rm( 'outdoors' );
+    up_down( 'images', ~up_down.where('scrambled') ) = 'social';
+  elseif ( strcmp(kind, 'social_v_outdoors_v_scrambled') )
+    nonsoc_ind = up_down.where( {'outdoors', 'scrambled'} );
+    up_down( 'images', ~nonsoc_ind ) = 'social';
+  elseif ( strcmp(kind, 'social_v_nonsocial') || strcmp(kind, 'social_minus_nonsocial') )
+    up_down = up_down.replace( {'outdoors', 'scrambled'}, 'nonsocial' );
+    up_down( 'images', ~up_down.where('nonsocial') ) = 'social';
+  else
+    assert( false );
+  end
+
+  if ( ~is_per_monkey )
+    up_down = hww.process.add_ud( up_down );
+  end
+
+  up_down = up_down.each1d( {'sessions', 'images'}, mean_func );
+
+  if ( strcmp(kind, 'social_minus_nonsocial') )
+    up_down = up_down({'social'}) - up_down({'nonsocial'});
+  end
+
+  pl.default(); figure(1); clf();
+
+  if ( is_normalized && ~strcmp(kind, 'social_minus_nonsocial') )
+    pl.y_lim = [-50, 150];
+  elseif ( is_normalized && strcmp(kind, 'social_minus_nonsocial') )
+    pl.y_lim = [-30, 50];
+  elseif ( ~is_normalized && ~strcmp(kind, 'social_minus_nonsocial') )
+    pl.y_lim = [0, 4e3];
+  else
+    pl.y_lim = [-800, 1500];
+  end
+
+  pl.order_by = { 'saline', 'low', 'high' };
+
+  if ( ~is_per_monkey )
+    pl.bar( up_down, 'doses', 'images', 'monk_group' );
+  else
+    pl.bar( up_down, 'doses', 'images', 'monkeys' );
+  end
+
+  if ( is_normalized )
+    filename = [ filename, '_normalized' ];
+  else
+    filename = [ filename, '_raw' ];
+  end
+
+  if ( is_per_monkey )
+    filename = [ filename, '_per_monkey' ];
+  else
+    filename = [ filename, '_ud' ];
+  end
+
+  %   add points
+
+  xs_labs = { 'saline', 'low', 'high' };
+  % g_labs = { 'all__images' };
+  g_labs = up_down( 'images' );
+
+  if ( is_per_monkey )
+    p_labs = up_down( 'monkeys' );
+  else
+    p_labs = { 'monk_group__up', 'monk_group__down' };
+  end
+
+  if ( add_points )
+
+    C = allcomb( {xs_labs, g_labs, p_labs} );
+
+    axs = findobj( figure(1), 'type', 'axes' );
+    set( axs, 'NextPlot', 'add' );
+
+    colors = hww.plot.util.get_monkey_colors();
+
+    for i = 1:size(C, 1)
+
+      x_lab = C{i, 1};
+      g_lab = C{i, 2};
+      p_lab = C{i, 3};
+
+      ax_ind = numel(axs) - find(strcmp(p_labs, p_lab)) + 1;
+
+      x_coord = find( strcmp(xs_labs, x_lab) );
+      subset = up_down.only( C(i, :) );
+      subset = subset.for_each_1d( {'monkeys', 'images'}, mean_func );
+
+    %   offsets = -1/numel(g_labs):1/numel(g_labs):1/numel(g_labs);
+
+    %   g_offset = find( strcmp(g_labs, g_lab) );
+
+    %   x = x_coord + offsets( g_offset );
+      x = x_coord;
+
+      data = subset.data;
+
+      for k = 1:numel(data)
+        color = colors.(char(subset('monkeys', k)));
+        plot( axs(ax_ind), x, data(k), sprintf('%s*', color) );
+      end
+
+    end
+  end
+
+  if ( do_save )
+    save_dir = fullfile( savepath, kind );
+    if ( exist(save_dir, 'dir') ~= 7 ), mkdir( save_dir ); end
+    saveas( gcf, fullfile(save_dir, filename), 'png' );
+    saveas( gcf, fullfile(save_dir, filename), 'epsc' );
+    saveas( gcf, fullfile(save_dir, filename), 'fig' );
+  end
+end
 
 %%  per monkey, faces / scr / outdoors
 

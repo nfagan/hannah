@@ -1,4 +1,4 @@
-function store_correlations = revision_roi_plots()
+function store_correlations = revision_roi_plots_collapsed_lowhigh()
 %%  load + setup
 
 bounds = ...
@@ -50,7 +50,7 @@ if ( exist(savepath_data, 'dir') ~= 7 ), mkdir(savepath_data); end;
 
 prop = prop_orig;
 prop = prop.mean( 2 );
-prop = prop.do( {'sessions', 'rois'}, @mean );
+prop = prop.each1d( {'sessions', 'rois'}, @rowops.mean );
 
 figure;
 pl.default();
@@ -61,7 +61,7 @@ pl.plot_by( prop, 'doses', 'monkeys', 'rois' );
 %%  plot saline low high look dur means
 
 per_roi = looks;
-per_roi = per_roi.do( {'sessions', 'rois'}, @mean );
+per_roi = per_roi.each1d( {'sessions', 'rois'}, @rowops.mean );
 
 figure;
 pl.default();
@@ -73,23 +73,20 @@ pl.plot_by( per_roi, 'doses', 'monkeys', 'rois' );
 
 raw_prop = prop_orig;
 raw_prop = raw_prop.mean( 2 );
-normed_prop = raw_prop.do( 'rois', @saline_normalize );
+normed_prop = raw_prop.for_each( 'rois', @saline_normalize );
 normed_prop = normed_prop.keep( ~isnan(normed_prop.data) & ~isinf(normed_prop.data) );
 % % new
 % normed_prop.data = abs( normed_prop.data - 1 );
 % % end new
-normed_prop = normed_prop.do( {'sessions', 'rois'}, @mean );
-raw_prop = raw_prop.do( {'sessions', 'rois'}, @mean );
+normed_prop = normed_prop.each1d( {'sessions', 'rois'}, @rowops.mean );
+raw_prop = raw_prop.each1d( {'sessions', 'rois'}, @rowops.mean );
 
-scatter_x = append( raw_prop.only('saline'), raw_prop.only('saline') );
-N = scatter_x.shape(1);
-scatter_x( 'doses', 1:N/2 ) = 'low';
-scatter_x( 'doses', N/2+1:N ) = 'high';
+scatter_x = raw_prop.only( 'saline' );
+scatter_y = collapse( normed_prop.rm('saline'), 'doses' );
 
-scatter_y = normed_prop.rm( 'saline' );
-
-X = scatter_x.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
-Y = scatter_y.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
+X = scatter_x.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
+Y = scatter_y.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
+X = X.collapse( 'doses' );
 
 %%  plot saline vs. percent change low high proportion means
 
@@ -157,18 +154,15 @@ normed_looks = normed_looks.keep( ~isnan(normed_looks.data) & ~isinf(normed_look
 % % new
 % normed_looks.data = abs( normed_looks.data - 1 );
 % % end new
-normed_looks = normed_looks.do( {'sessions', 'rois'}, @mean );
-raw_looks = raw_looks.do( {'sessions', 'rois'}, @mean );
+normed_looks = normed_looks.each1d( {'sessions', 'rois'}, @rowops.mean );
+raw_looks = raw_looks.each1d( {'sessions', 'rois'}, @rowops.mean );
 
-scatter_x = append( raw_looks.only('saline'), raw_looks.only('saline') );
-N = scatter_x.shape(1);
-scatter_x( 'doses', 1:N/2 ) = 'low';
-scatter_x( 'doses', N/2+1:N ) = 'high';
-
+scatter_x = collapse( raw_looks.only('saline'), 'doses' );
 scatter_y = append( normed_looks.only('low'), normed_looks.only('high') );
+scatter_y = scatter_y.collapse( 'doses' ); 
 
-X = scatter_x.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
-Y = scatter_y.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
+X = scatter_x.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
+Y = scatter_y.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
 
 pl.default();
 pl.marker_size = 40;
@@ -253,18 +247,14 @@ normed_looks = normed_looks.keep( ~isnan(normed_looks.data) & ~isinf(normed_look
 % % new
 % normed_looks.data = abs( normed_looks.data - 1 );
 % % end new
-normed_looks = normed_looks.do( {'sessions', 'rois'}, @mean );
-raw_looks = raw_looks.do( {'sessions', 'rois'}, @mean );
+normed_looks = normed_looks.each1d( {'sessions', 'rois'}, @rowops.mean );
+raw_looks = raw_looks.each1d( {'sessions', 'rois'}, @rowops.mean );
 
-scatter_x = append( raw_looks.only('saline'), raw_looks.only('saline') );
-N = scatter_x.shape(1);
-scatter_x( 'doses', 1:N/2 ) = 'low';
-scatter_x( 'doses', N/2+1:N ) = 'high';
+scatter_x = collapse( raw_looks.only('saline'), 'doses' );
+scatter_y = collapse( append(normed_looks({'low'}), normed_looks({'high'})), 'doses' );
 
-scatter_y = append( normed_looks.only('low'), normed_looks.only('high') );
-
-X = scatter_x.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
-Y = scatter_y.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
+X = scatter_x.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
+Y = scatter_y.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
 
 pl.default();
 pl.marker_size = 40;
@@ -399,18 +389,14 @@ raw_iti_prop = iti_prop;
 % % new
 % normed_looks.data = abs( normed_iti_prop.data - 1 );
 % % end new
-normed_iti_prop = normed_iti_prop.do( {'sessions', 'rois'}, @mean );
-raw_iti_prop = raw_iti_prop.do( {'sessions', 'rois'}, @mean );
+normed_iti_prop = normed_iti_prop.each1d( {'sessions', 'rois'}, @rowops.mean );
+raw_iti_prop = raw_iti_prop.each1d( {'sessions', 'rois'}, @rowops.mean );
 
-scatter_x = append( raw_iti_prop.only('saline'), raw_iti_prop.only('saline') );
-N = scatter_x.shape(1);
-scatter_x( 'doses', 1:N/2 ) = 'low';
-scatter_x( 'doses', N/2+1:N ) = 'high';
+scatter_x = collapse( raw_iti_prop.only('saline'), 'doses' );
+scatter_y = collapse( append(normed_iti_prop({'low'}), normed_iti_prop({'high'})), 'doses' );
 
-scatter_y = append( normed_iti_prop.only('low'), normed_iti_prop.only('high') );
-
-X = scatter_x.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
-Y = scatter_y.do( {'monkeys', 'doses', 'images', 'rois'}, @mean );
+X = scatter_x.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
+Y = scatter_y.each1d( {'monkeys', 'doses', 'images', 'rois'}, @rowops.mean );
 
 pl.default();
 pl.marker_size = 40;
